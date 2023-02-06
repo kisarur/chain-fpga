@@ -1,5 +1,5 @@
-#include "common.h"
-#include "chain_hardware.h"
+#include <anchor.h>
+#include <chain_fpga.h>
 
 // control whether the emulator should be used
 static bool use_emulator = false;
@@ -20,77 +20,15 @@ cl_mem input_num_subparts_buf[NUM_HW_KERNELS];
 cl_mem output_f_buf[NUM_HW_KERNELS];
 cl_mem output_p_buf[NUM_HW_KERNELS];
 
-pthread_mutex_t hw_lock[NUM_HW_KERNELS] = {PTHREAD_MUTEX_INITIALIZER};
-pthread_mutex_t hw_lock_support[NUM_HW_KERNELS] = {PTHREAD_MUTEX_INITIALIZER};
-
-double end_times[NUM_HW_KERNELS] = {0};
-queue<int> hw_queue[NUM_HW_KERNELS];
-double start_time = realtime();
-
 // Run chaining on OpenCL hardware
-int perform_core_chaining_on_fpga(int64_t n, int max_dist_x, int32_t max_dist_y, int32_t bw, int32_t q_span, float avg_qspan_scaled,
-                anchor_t * a, int32_t* f, int32_t* p, unsigned char * num_subparts, int64_t total_subparts, int tid, float hw_time_pred, float sw_time_pred) {
-    
-    double start = realtime();
-    
-    if (n == 0) {
-        return 0;
-    }
-            
+void perform_core_chaining_on_fpga(int64_t n, int max_dist_x, int32_t max_dist_y, int32_t bw, int32_t q_span, float avg_qspan_scaled,
+                                   anchor_t* a, int32_t* f, int32_t* p, unsigned char* num_subparts, int64_t total_subparts, int kernel_id) {
+    if (n == 0) return;
+
     if (n > BUFFER_N) {
         fprintf(stderr, "Error: The size of the call (n = %ld) exceeds buffer size (%d). Process this read on SW?\n", n, BUFFER_N);
         exit(1);
     }
-    
-#if defined(VERIFY_OUTPUT) || !defined(PROCESS_ON_SW_IF_HW_BUSY)
-    // always process on hardware
-    int kernel_id = -1;
-    int ret = -1;
-    while (ret != 0) {
-        kernel_id = (kernel_id + 1) % NUM_HW_KERNELS;
-        ret = pthread_mutex_trylock(&hw_lock[kernel_id]);
-    } 
-#else
-    // intelligently decide whether to process on HW, only if (wait time to access HW + HW processing time) < SW processing time
-    // otherwise, just return to process on software
-    bool should_wait = false;
-    int kernel_id;
-    for (kernel_id = 0; kernel_id < NUM_HW_KERNELS; kernel_id++) {
-        pthread_mutex_lock(&hw_lock_support[kernel_id]);
-        float curr_time = (realtime() - start_time) * 1000;
-        double total_time = end_times[kernel_id] - curr_time + hw_time_pred;
-        if (total_time <= 0) total_time = hw_time_pred;
-
-        if (total_time < sw_time_pred) {
-            hw_queue[kernel_id].push(tid); // add current task to hardware processing queue
-            end_times[kernel_id] = curr_time + total_time;
-            should_wait = true;
-        }
-        pthread_mutex_unlock(&hw_lock_support[kernel_id]);
-
-        if (should_wait) break;
-    }
-
-    // return if it isn't worth waiting for hardware execution
-    if (!should_wait) return 1;
-
-    // wait until hw_lock is available, see if current task is the next task to process on hw_queue and if so, continue to process it on HW
-    bool got_in = false;
-    while (true) {
-        pthread_mutex_lock(&hw_lock[kernel_id]);
-        
-        pthread_mutex_lock(&hw_lock_support[kernel_id]);
-        if (hw_queue[kernel_id].front() == tid) {
-            hw_queue[kernel_id].pop();
-            got_in = true;
-        }
-        pthread_mutex_unlock(&hw_lock_support[kernel_id]);
-
-        if (got_in) break;
-
-        pthread_mutex_unlock(&hw_lock[kernel_id]);
-    }
-#endif
 
     cl_event write_event[2];
     cl_event kernel_event[1];
@@ -99,20 +37,20 @@ int perform_core_chaining_on_fpga(int64_t n, int max_dist_x, int32_t max_dist_y,
 
     // Transfer inputs to device.
     status = clEnqueueWriteBuffer(command_queue[kernel_id], input_a_buf[kernel_id], CL_FALSE,
-        0, (n + EXTRA_ELEMS) * sizeof(cl_ulong2), a, 0, NULL, &write_event[0]);
+                                  0, (n + EXTRA_ELEMS) * sizeof(cl_ulong2), a, 0, NULL, &write_event[0]);
     checkError(status, "Failed to transfer input a");
 
     status = clEnqueueWriteBuffer(command_queue[kernel_id], input_num_subparts_buf[kernel_id], CL_FALSE,
-        0, (n + EXTRA_ELEMS) * sizeof(cl_uchar), num_subparts, 0, NULL, &write_event[1]);
+                                  0, (n + EXTRA_ELEMS) * sizeof(cl_uchar), num_subparts, 0, NULL, &write_event[1]);
     checkError(status, "Failed to transfer input num_subparts");
 
 #ifdef DEBUG_HW
     fprintf(stderr, "[INFO] n = %ld on kernel_id = %d input transfer completed\n", n, kernel_id);
 #endif
-    
+
     // Set the kernel arguments.
     status = clSetKernelArg(kernels[kernel_id], 0, sizeof(cl_long), &total_subparts);
-    checkError(status, "Failed to set argument 0");                
+    checkError(status, "Failed to set argument 0");
 
     status = clSetKernelArg(kernels[kernel_id], 1, sizeof(cl_int), &max_dist_x);
     checkError(status, "Failed to set argument 1");
@@ -150,10 +88,10 @@ int perform_core_chaining_on_fpga(int64_t n, int max_dist_x, int32_t max_dist_y,
 
     // Read the results. This is the final operation.
     status = clEnqueueReadBuffer(command_queue[kernel_id], output_f_buf[kernel_id], CL_FALSE,
-        0, (n + EXTRA_ELEMS) * sizeof(cl_int), f, 1, kernel_event, &read_event[0]);
+                                 0, (n + EXTRA_ELEMS) * sizeof(cl_int), f, 1, kernel_event, &read_event[0]);
 
     status = clEnqueueReadBuffer(command_queue[kernel_id], output_p_buf[kernel_id], CL_FALSE,
-        0, (n + EXTRA_ELEMS) * sizeof(cl_int), p, 1, kernel_event, &read_event[1]);
+                                 0, (n + EXTRA_ELEMS) * sizeof(cl_int), p, 1, kernel_event, &read_event[1]);
 
     clFinish(command_queue[kernel_id]);
 
@@ -168,35 +106,17 @@ int perform_core_chaining_on_fpga(int64_t n, int max_dist_x, int32_t max_dist_y,
     for (int i = 0; i < 2; i++) {
         clReleaseEvent(read_event[i]);
     }
-
-    pthread_mutex_unlock(&hw_lock[kernel_id]);
- 
-    fprintf(stderr, "hardware time: %0.3f ms\n", (realtime() - start) * 1000);
-
-    return 0;
 }
-
 
 /////// HELPER FUNCTIONS ///////
-
-double realtime(void) {
-	struct timeval tp;
-	gettimeofday(&tp, NULL);
-	return tp.tv_sec + tp.tv_usec * 1e-6;
-}
-
-static void device_info_ulong( cl_device_id device, cl_device_info param, const char* name);
-static void device_info_uint( cl_device_id device, cl_device_info param, const char* name);
-static void device_info_bool( cl_device_id device, cl_device_info param, const char* name);
-static void device_info_string( cl_device_id device, cl_device_info param, const char* name);
-static void display_device_info( cl_device_id device );
+static void device_info_ulong(cl_device_id device, cl_device_info param, const char* name);
+static void device_info_uint(cl_device_id device, cl_device_info param, const char* name);
+static void device_info_bool(cl_device_id device, cl_device_info param, const char* name);
+static void device_info_string(cl_device_id device, cl_device_info param, const char* name);
+static void display_device_info(cl_device_id device);
 
 bool hardware_init(long buf_size) {
     cl_int status;
-
-    // if (!setCwdToExeDir()) {
-    //     return false;
-    // }
 
     // Get the OpenCL platform.
     if (use_emulator) {
@@ -239,7 +159,7 @@ bool hardware_init(long buf_size) {
     checkError(status, "Failed to create context");
 
     // Create the program.
-    std::string binary_file = getBoardBinaryFile("bin/minimap2_opencl", device);
+    std::string binary_file = getBoardBinaryFile("../lib/bin/minimap2_opencl", device);
     fprintf(stderr, "Using AOCX: %s\n", binary_file.c_str());
     program = createProgramFromBinary(context, binary_file.c_str(), &device, 1);
 
@@ -271,16 +191,16 @@ bool hardware_init(long buf_size) {
         checkError(status, "Failed to create buffer for input a");
 
         input_num_subparts_buf[i] = clCreateBuffer(context, CL_MEM_READ_ONLY,
-                                        buf_size * sizeof(cl_uchar), NULL, &status);
+                                                   buf_size * sizeof(cl_uchar), NULL, &status);
         checkError(status, "Failed to create buffer for input num_subparts");
 
         // Output buffers
         output_f_buf[i] = clCreateBuffer(context, CL_MEM_WRITE_ONLY,
-                                            buf_size * sizeof(cl_int), NULL, &status);
+                                         buf_size * sizeof(cl_int), NULL, &status);
         checkError(status, "Failed to create buffer for f");
-        
+
         output_p_buf[i] = clCreateBuffer(context, CL_MEM_WRITE_ONLY,
-                                            buf_size * sizeof(cl_int), NULL, &status);
+                                         buf_size * sizeof(cl_int), NULL, &status);
         checkError(status, "Failed to create buffer for p");
     }
 

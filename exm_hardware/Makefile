@@ -55,15 +55,15 @@ CXX := g++
 
 # Target
 TARGET := host
-TARGET_DIR := bin
+TARGET_DIR := .
 
 # Directories
-INC_DIRS := opencl/inc
+INC_DIRS := ../lib/opencl/inc ../lib/include
 LIB_DIRS := 
 
 # Files
 INCS := $(wildcard )
-SRCS := $(wildcard *.cpp  *.c opencl/src/AOCLUtils/*.cpp) 
+SRCS := $(wildcard *.cpp  *.c ../lib/opencl/src/AOCLUtils/*.cpp ../lib/src/*.cpp) 
 LIBS := rt pthread
 
 # Make it all!
