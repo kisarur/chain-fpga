@@ -5,7 +5,8 @@
 #define K_SW 5.237303730088228e-06
 #define C_SW -0.9308447100947506
 
-// Enable the following macro to run both on software and hardware and cross-check the outputs
+// Uncomment the following macro to run both on software and FPGA hardware and cross-check the outputs
+// (enabling this macro will disable max_skip heuristic on software)
 // #define VERIFY_OUTPUT
 
 double realtime(void);
