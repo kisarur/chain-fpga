@@ -21,8 +21,8 @@ cl_mem output_f_buf[NUM_HW_KERNELS];
 cl_mem output_p_buf[NUM_HW_KERNELS];
 
 // Run chaining on OpenCL hardware
-void perform_core_chaining_on_fpga(int64_t n, int max_dist_x, int32_t max_dist_y, int32_t bw, int32_t q_span, float avg_qspan_scaled,
-                                   anchor_t* a, int32_t* f, int32_t* p, unsigned char* num_subparts, int64_t total_subparts, int kernel_id) {
+void perform_core_chaining_on_fpga(int64_t n, int32_t max_dist_x, int32_t max_dist_y, int32_t bw, int32_t q_span, float avg_qspan_scaled,
+                                   anchor_t* a, int32_t* f, int32_t* p, unsigned char* num_subparts, int64_t total_subparts, int32_t kernel_id) {
     if (n == 0) return;
 
     if (n > BUFFER_N) {
