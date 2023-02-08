@@ -1,8 +1,9 @@
 #include <assert.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <math.h>
 #include <cstring>
-#include "CL/opencl.h"
-#include "AOCLUtils/aocl_utils.h"
+#include "xcl2.hpp"
 #include <sys/time.h>
 #include <sys/resource.h>
 #include <sstream>
@@ -15,7 +16,7 @@ using namespace std;
 
 // Parameters of the hardware architecture (Important: don't change the values below unless you recompile hardware code (src/fpga/minimap2_opencl.cl))
 #define NUM_HW_KERNELS 1
-#define TRIPCOUNT_PER_SUBPART 64
+#define TRIPCOUNT_PER_SUBPART 128
 #define MAX_SUBPARTS 8
 #define FPGA_MAX_TRIPCOUNT (TRIPCOUNT_PER_SUBPART * MAX_SUBPARTS)
 
@@ -34,3 +35,4 @@ using namespace std;
 void perform_core_chaining_on_fpga(int64_t, int32_t, int32_t, int32_t, int32_t, float, anchor_t*, int32_t*, int32_t*, unsigned char*, int64_t, int32_t);
 bool hardware_init(long);
 void cleanup();
+void checkError(cl_int err, const string message);
