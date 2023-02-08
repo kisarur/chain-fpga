@@ -1,2 +1,4 @@
 .vscode
-exm_*/host
+lib/*.o
+lib/*.a
+examples/*/host
