@@ -58,13 +58,13 @@ TARGET := host
 TARGET_DIR := .
 
 # Directories
-INC_DIRS := ../lib/opencl/inc ../lib/include
-LIB_DIRS := 
+INC_DIRS := ../../include ../../include/opencl
+LIB_DIRS := ../../lib
 
 # Files
-INCS := $(wildcard )
-SRCS := $(wildcard *.cpp  *.c ../lib/opencl/src/AOCLUtils/*.cpp ../lib/src/*.cpp) 
-LIBS := rt pthread
+INCS := $(wildcard *.h)
+SRCS := $(wildcard *.cpp *.c) 
+LIBS := rt pthread chainfpga
 
 # Make it all!
 all : $(TARGET_DIR)/$(TARGET)

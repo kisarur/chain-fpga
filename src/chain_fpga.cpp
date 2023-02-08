@@ -158,8 +158,12 @@ bool hardware_init(long buf_size) {
     context = clCreateContext(NULL, 1, &device, &oclContextCallback, NULL, &status);
     checkError(status, "Failed to create context");
 
+    // Get the absolute path of the FPGA binary (.aocx) file
+    char abspath [PATH_MAX + 1];
+    char *res = realpath("../../lib/minimap2_opencl", abspath);
+
     // Create the program.
-    std::string binary_file = getBoardBinaryFile("../lib/bin/minimap2_opencl", device);
+    std::string binary_file = getBoardBinaryFile(abspath, device);
     fprintf(stderr, "Using AOCX: %s\n", binary_file.c_str());
     program = createProgramFromBinary(context, binary_file.c_str(), &device, 1);
 

@@ -7,6 +7,6 @@
 
 // Uncomment the following macro to run both on software and FPGA hardware and cross-check the outputs
 // (enabling this macro will disable max_skip heuristic on software)
-// #define VERIFY_OUTPUT
+#define VERIFY_OUTPUT
 
 double realtime(void);

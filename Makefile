@@ -50,38 +50,45 @@ else
 CXXFLAGS += -O2
 endif
 
-# Compiler
+# Tools
 CXX := g++
+AR := ar
 
 # Target
-TARGET := host
-TARGET_DIR := .
+TARGET_DIR := lib
+STATICLIB := $(TARGET_DIR)/libchainfpga.a
+OBJ := $(TARGET_DIR)/chain_fpga.o $(TARGET_DIR)/options.o $(TARGET_DIR)/opencl.o
 
 # Directories
-INC_DIRS := ../lib/opencl/inc ../lib/include
+INC_DIRS := include include/opencl
 LIB_DIRS := 
 
-# Files
-INCS := $(wildcard )
-SRCS := $(wildcard *.cpp  *.c ../lib/opencl/src/AOCLUtils/*.cpp ../lib/src/*.cpp) 
-LIBS := rt pthread
-
 # Make it all!
-all : $(TARGET_DIR)/$(TARGET)
+all : $(STATICLIB)
 
-# Host executable target.
-$(TARGET_DIR)/$(TARGET) : Makefile $(SRCS) $(INCS) $(TARGET_DIR)
+# Build static library
+$(STATICLIB) : Makefile $(OBJ)
+	$(ECHO)$(AR) rcs $@ $(OBJ)
+
+$(TARGET_DIR)/%.o : src/%.cpp
 	$(ECHO)$(CXX) $(CPPFLAGS) $(CXXFLAGS) -fPIC $(foreach D,$(INC_DIRS),-I$D) \
-			$(AOCL_COMPILE_CONFIG) $(SRCS) $(AOCL_LINK_CONFIG) \
+			$(AOCL_COMPILE_CONFIG) $< $(AOCL_LINK_CONFIG) \
 			$(foreach D,$(LIB_DIRS),-L$D) \
 			$(foreach L,$(LIBS),-l$L) \
-			-o $(TARGET_DIR)/$(TARGET)
+			-c -o $@
+
+$(TARGET_DIR)/%.o : src/opencl/AOCLUtils/%.cpp
+	$(ECHO)$(CXX) $(CPPFLAGS) $(CXXFLAGS) -fPIC $(foreach D,$(INC_DIRS),-I$D) \
+			$(AOCL_COMPILE_CONFIG) $< $(AOCL_LINK_CONFIG) \
+			$(foreach D,$(LIB_DIRS),-L$D) \
+			$(foreach L,$(LIBS),-l$L) \
+			-c -o $@
 
 $(TARGET_DIR) :
 	$(ECHO)mkdir $(TARGET_DIR)
 	
 # Standard make targets
 clean :
-	$(ECHO)rm -f $(TARGET_DIR)/$(TARGET)
+	$(ECHO)rm -f $(STATICLIB) $(OBJ)
 
 .PHONY : all clean
