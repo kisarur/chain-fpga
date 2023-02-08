@@ -70,14 +70,14 @@ all : $(STATICLIB)
 $(STATICLIB) : Makefile $(OBJ)
 	$(ECHO)$(AR) rcs $@ $(OBJ)
 
-$(TARGET_DIR)/%.o : src/%.cpp
+$(TARGET_DIR)/%.o : src/%.cpp $(wildcard include/*.h)
 	$(ECHO)$(CXX) $(CPPFLAGS) $(CXXFLAGS) -fPIC $(foreach D,$(INC_DIRS),-I$D) \
 			$(AOCL_COMPILE_CONFIG) $< $(AOCL_LINK_CONFIG) \
 			$(foreach D,$(LIB_DIRS),-L$D) \
 			$(foreach L,$(LIBS),-l$L) \
 			-c -o $@
 
-$(TARGET_DIR)/%.o : src/opencl/AOCLUtils/%.cpp
+$(TARGET_DIR)/%.o : src/opencl/AOCLUtils/%.cpp $(wildcard include/opencl/*.h)
 	$(ECHO)$(CXX) $(CPPFLAGS) $(CXXFLAGS) -fPIC $(foreach D,$(INC_DIRS),-I$D) \
 			$(AOCL_COMPILE_CONFIG) $< $(AOCL_LINK_CONFIG) \
 			$(foreach D,$(LIB_DIRS),-L$D) \
