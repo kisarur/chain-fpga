@@ -38,7 +38,7 @@ The following C/C++ API functions are supported by the *chainFPGA* library.
 ```c
 bool hardware_init(long buf_size);
 ```
-This function initializes the OpenCL hardware resources (buffers, kernels, etc.) for hardware chaining tasks. The maximum buffer size (also the maximum no. of anchors that can be processed by any chaining task) is specified as an argument. Call this function once before any `perform_core_chaining_on_fpga()` function call.
+This function initializes the OpenCL hardware resources (buffers, kernels, etc.) for hardware chaining tasks. The size of input/output buffers (decides the maximum no. of anchors that can be processed by any chaining task, and is limited by FPGA device's global memory) is specified as an argument. Call this function once before any `perform_core_chaining_on_fpga()` function call.
 
 ```c
 void perform_core_chaining_on_fpga(int64_t n, int32_t max_dist_x, int32_t max_dist_y, int32_t bw, int32_t q_span, float avg_qspan_scaled, anchor_t* a, int32_t* f, int32_t* p, unsigned char* num_subparts, int64_t total_subparts, int32_t kernel_id);
