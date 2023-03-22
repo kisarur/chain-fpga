@@ -1,4 +1,3 @@
-#include <anchor.h>
 #include <chain_fpga.h>
 #include "common.h"
 #include "chain_software.h"

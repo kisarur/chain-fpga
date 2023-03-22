@@ -1,4 +1,3 @@
-#include <anchor.h>
 #include <chain_fpga.h>
 
 // control whether the emulator should be used
