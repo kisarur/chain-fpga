@@ -72,7 +72,6 @@ int main(int argc, char *argv[]) {
         // perform core chaining computation on FPGA hardware kernel 0
         perform_core_chaining_on_fpga(n, max_dist_x, max_dist_y, bw, q_span_hw, avg_qspan_scaled, a, f, p, num_subparts, total_subparts, 0);
 	} else {
-		double start = realtime();
         // perform core chaining computation on CPU as software
         perform_core_chaining_on_cpu(n, max_dist_x, max_dist_y, bw, avg_qspan_scaled, 5000, a, f, p);
     }
@@ -115,10 +114,4 @@ int main(int argc, char *argv[]) {
     cleanup();
 
     return 0;
-}
-
-double realtime(void) {
-    struct timeval tp;
-    gettimeofday(&tp, NULL);
-    return tp.tv_sec + tp.tv_usec * 1e-6;
 }
