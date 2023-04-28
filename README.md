@@ -1,5 +1,5 @@
-# chainFPGA
-*chainFPGA* is a library API designed for FPGA-based chaining step acceleration, which is a crucial computational step in many third-generation bioinformatics sequence alignment software. This library API provides a user-friendly interface to integrate the FPGA-based chaining step accelerator (originaly used in [Minimap2_FPGA](https://github.com/kisarur/minimap2_fpga_opencl)) with other bioinformatics tools without requiring users to engage in internal hardware development.
+# chain-fpga
+*chain-fpga* is a library API designed for FPGA-based chaining step acceleration, which is a crucial computational step in many third-generation bioinformatics sequence alignment software. This library API provides a user-friendly interface to integrate the FPGA-based chaining step accelerator (originaly used in [minimap2-fpga](https://github.com/kisarur/minimap2-fpga)) with other bioinformatics tools without requiring users to engage in internal hardware development.
 
 ## Building
 
@@ -7,8 +7,8 @@
 
 2. Use the commands below to download the GitHub repo and setup the environment (you may need to update the variables defined in `scripts/init_env.sh`, if they're not already pointing to the correct paths in your system).
     ```
-    git clone git@github.com:kisarur/chainFPGA.git
-    cd chainFPGA
+    git clone git@github.com:kisarur/chain-fpga.git -b intel
+    cd chain-fpga
     source scripts/init_env.sh
     ``` 
 
@@ -24,16 +24,16 @@
 
 ## Usage
 
-Include `<chain_fpga.h>` in your C/C++ program and call the *chainFPGA* API functions. Use the command below to compile your program and link it against *chainFPGA*. 
+Include `<chain_fpga.h>` in your C/C++ program and call the *chain-fpga* API functions. Use the command below to compile your program and link it against *chain-fpga*. 
 ```
-g++ [OPTIONS] -I path/to/chainFPGA/include -I path/to/chainFPGA/include/opencl -L path/to/chainFPGA/lib -lchainfpga  
+g++ [OPTIONS] -I path/to/chain-fpga/include -I path/to/chain-fpga/include/opencl -L path/to/chain-fpga/lib -lchainfpga  
 ```
 
 Please note that `[OPTIONS]` should contain other relevant Intel FPGA and OpenCL headers/libraries setup in your system. To help with the compilation process, we have created a `Makefile` that includes all required compilation commands. Please see the examples under `examples/` which also contain this `Makefile`.  
 
 ## API Functions
 
-The following C/C++ API functions are supported by the *chainFPGA* library.
+The following C/C++ API functions are supported by the *chain-fpga* library.
 
 ```c
 bool hardware_init(long buf_size);
@@ -43,7 +43,7 @@ This function initializes the OpenCL hardware resources (buffers, kernels, etc.)
 ```c
 void perform_core_chaining_on_fpga(int64_t n, int32_t max_dist_x, int32_t max_dist_y, int32_t bw, int32_t q_span, float avg_qspan_scaled, anchor_t* a, int32_t* f, int32_t* p, unsigned char* num_subparts, int64_t total_subparts, int32_t kernel_id);
 ```
-This is the key function in chainFPGA that takes in the anchor data and other parameters corresponding to the chaining task and processes it (transfer the inputs to FPGA, perform chaining on FPGA, transfer the output to host) on the FPGA-based hardware accelerator. The example in `examples/hardware/` can be used as a guide to know how the arguments to this function should be set properly.
+This is the key function in *chain-fpga* that takes in the anchor data and other parameters corresponding to the chaining task and processes it (transfer the inputs to FPGA, perform chaining on FPGA, transfer the output to host) on the FPGA-based hardware accelerator. The example in `examples/hardware/` can be used as a guide to know how the arguments to this function should be set properly.
 
 ```c
 void cleanup();
@@ -52,4 +52,4 @@ This function cleans up the OpenCL hardware resources allocated by `hardware_ini
 
 ## Acknowledgment
 
-The chaining algorithm used in *chainFPGA* was inspired by the core chaining computation of `mm_chain_dp` function in [Minimap2](https://github.com/lh3/minimap2).
+The chaining algorithm used in *chain-fpga* was inspired by the core chaining computation of `mm_chain_dp` function in [Minimap2](https://github.com/lh3/minimap2).
