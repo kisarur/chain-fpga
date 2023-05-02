@@ -77,7 +77,7 @@ SDCARD := sd_card
 
 AR = ar
 
-include $(XF_PROJ_ROOT)/include/opencl/opencl/opencl.mk
+include $(XF_PROJ_ROOT)/opencl.mk
 # CXXFLAGS += $(opencl_CXXFLAGS) -Wall -O0 -g -std=c++1y
 CXXFLAGS += $(opencl_CXXFLAGS) -Wall -O2 -g -std=c++1y
 LDFLAGS += $(opencl_LDFLAGS) 
@@ -87,8 +87,8 @@ LDFLAGS += $(opencl_LDFLAGS)
 PLATFORM_BLOCKLIST += nodma 
 ############################## Setting up Host Variables ##############################
 #Include Required Host Source Files
-CXXFLAGS += -I$(XF_PROJ_ROOT)/include/opencl/xcl2 -I$(XF_PROJ_ROOT)/include
-HOST_SRCS += $(XF_PROJ_ROOT)/include/opencl/xcl2/xcl2.cpp ./*.cpp ./main.c
+CXXFLAGS += -I$(XF_PROJ_ROOT)/include/opencl -I$(XF_PROJ_ROOT)/include
+HOST_SRCS += $(XF_PROJ_ROOT)/src/opencl/xcl2.cpp ./*.cpp ./main.c
 # Host compiler global settings
 CXXFLAGS += -fmessage-length=0
 LDFLAGS += -lrt -lstdc++ -lm -lz -lpthread
@@ -164,7 +164,7 @@ endif
 $(STATICLIB) : Makefile $(OBJ)
 		$(AR) rcs $@ $(OBJ)
 
-$(TARGET_DIR)/xcl2.o : $(XF_PROJ_ROOT)/include/opencl/xcl2/xcl2.cpp $(XF_PROJ_ROOT)/include/opencl/xcl2/xcl2.hpp
+$(TARGET_DIR)/xcl2.o : $(XF_PROJ_ROOT)/src/opencl/xcl2.cpp $(XF_PROJ_ROOT)/include/opencl/xcl2.hpp
 		$(CXX) -c -o $@ $< $(CXXFLAGS) $(LDFLAGS)
 
 $(TARGET_DIR)/chain_fpga.o : src/chain_fpga.cpp $(wildcard include/*.h)

@@ -3,7 +3,7 @@ CHAINFPGALIB_ROOT=../..
 HOST_ARCH := x86
 
 # Compilation flags
-include $(CHAINFPGALIB_ROOT)/include/opencl/opencl/opencl.mk
+include $(CHAINFPGALIB_ROOT)/opencl.mk
 CXXFLAGS += $(opencl_CXXFLAGS) -Wall -std=c++1y
 LDFLAGS += $(opencl_LDFLAGS) 
 ifeq ($(DEBUG),1)
@@ -20,7 +20,7 @@ TARGET := host
 TARGET_DIR := .
 
 # Directories
-INC_DIRS := $(CHAINFPGALIB_ROOT)/include $(CHAINFPGALIB_ROOT)/include/opencl/xcl2
+INC_DIRS := $(CHAINFPGALIB_ROOT)/include $(CHAINFPGALIB_ROOT)/include/opencl
 LIB_DIRS := $(CHAINFPGALIB_ROOT)/lib
 
 # Files
