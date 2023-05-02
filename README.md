@@ -28,7 +28,7 @@ cd chain-fpga
 
 Include `<chain_fpga.h>` in your C/C++ program and call the *chain-fpga* API functions. Use the command below to compile your program and link it against *chain-fpga*. 
 ```
-g++ [OPTIONS] -I path/to/chain-fpga/include -I path/to/chain-fpga/include/opencl/xcl2 -L path/to/chain-fpga/lib -lchainfpga  
+g++ [OPTIONS] -I path/to/chain-fpga/include -I path/to/chain-fpga/include/opencl -L path/to/chain-fpga/lib -lchainfpga  
 ```
 
 Please note that `[OPTIONS]` should contain other relevant Xilinx FPGA and OpenCL headers/libraries setup in your system. To help with the compilation process, we have created a `Makefile` that includes all required compilation commands. Please see the examples under `examples/` which also contain this `Makefile`.  
