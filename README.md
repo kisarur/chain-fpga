@@ -17,7 +17,7 @@ git clone git@github.com:kisarur/chain-fpga.git
 cd chain-fpga
 ``` 
 
-3. [OPTIONAL] If you use Xilinx UltraScale+ VU9P based FPGA board available on AWS EC2 F1 instance, for which our accelerator implementation (on this branch) is optimized, it is recommended that you use the already built FPGA hardware binary (also called AFI - Amazon FPGA Image) included with this repo at `bin/minimap2_opencl.awsxclbin`. However, if you want to build this AFI from source (in `device/minimap2_opencl.cl`), you can use the guide available at https://github.com/aws/aws-fpga/tree/master/Vitis (as recommended on the guide, using a non-F1 EC2 compute instance for this time-consuming hardware build step will help minimize costs).
+3. [OPTIONAL] If you use Xilinx UltraScale+ VU9P based FPGA board available on AWS EC2 F1 instance, for which our accelerator implementation (on this branch) is optimized, it is recommended that you use the already built FPGA hardware binary (also called AFI - Amazon FPGA Image) included with this repo at `lib/minimap2_opencl.awsxclbin`. However, if you want to build this AFI from source (in `src/fpga/minimap2_opencl.cl`), you can use the guide available at https://github.com/aws/aws-fpga/tree/master/Vitis (as recommended on the guide, using a non-F1 EC2 compute instance for this time-consuming hardware build step will help minimize costs).
 
 4. To build the host side (software) of the libray API, use the command below. 
     ```
