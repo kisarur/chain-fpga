@@ -7,7 +7,7 @@
 
 2. Use the commands below to download the GitHub repo and setup the environment (you may need to update the variables defined in `scripts/init_env.sh`, if they're not already pointing to the correct paths in your system).
     ```
-    git clone git@github.com:kisarur/chain-fpga.git -b intel
+    git clone https://github.com/kisarur/chain-fpga.git -b intel
     cd chain-fpga
     source scripts/init_env.sh
     ``` 
